@@ -44,6 +44,25 @@ hist(totalByDay$sum, breaks=10, main = "Histogram of total daily steps",
 
 ![plot of chunk unnamed-chunk-2](./PA1_template_files/figure-html/unnamed-chunk-2.png) 
 
+Calculate mean and median of the daily totals, ignoring days that totalled to NA values. Based on the histogram I am expecting values between 10,000 and 11,000
+
+
+```r
+mean(totalByDay$sum, na.rm=TRUE)
+```
+
+```
+## [1] 10766
+```
+
+```r
+median(totalByDay$sum, na.rm=TRUE)
+```
+
+```
+## [1] 10765
+```
+
 ## What is the average daily activity pattern?
 
 
