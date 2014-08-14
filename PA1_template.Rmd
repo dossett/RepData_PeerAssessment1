@@ -1,13 +1,33 @@
 # Reproducible Research: Peer Assessment 1
 
-
 ## Loading and preprocessing the data
 
+First I load the data and transform the date column into a more usable format
 
+```{r}
+activity <- read.csv("activity.csv", header=TRUE)
+#Convert the dates
+Date <- strptime(activity$date, "%Y-%m-%d")
+
+#Create a logical vectors of everything other than the original date
+#then bind those columns with the new Date back to our data frame
+lv <- names(activity) != "date"
+activity <- cbind(activity[,lv], Date)
+
+#Does everything look ok?
+summary(activity)
+```
 
 ## What is mean total number of steps taken per day?
+```{r, message=FALSE}
+library(dplyr)
+totalByDay = activity %>%
+              group_by(Date) %>%
+              summarise(sum=sum(steps))
 
-
+hist(totalByDay$sum, breaks=10, main = "Histogram of total daily steps",
+     xlab = NULL)
+```
 
 ## What is the average daily activity pattern?
 
