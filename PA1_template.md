@@ -217,7 +217,7 @@ Is the average by interval different for weekdays and weekend?  In general yes:
 
 ```r
 ggplot(newAverageByInterval) + 
-  geom_point(aes(x=interval,y=avg)) + 
+  geom_line(aes(x=interval,y=avg)) + 
   facet_wrap(~dayType)
 ```
 
