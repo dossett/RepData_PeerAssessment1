@@ -4,6 +4,10 @@ output:
     keep_md: yes
 ---
 # Reproducible Research: Peer Assessment 1
+First, I load necessary libraries with messages supressed.  Doing this once so future messages aren't silently supressed
+```{r, message=FALSE}
+library(dplyr)
+```
 
 ## Loading and preprocessing the data
 
@@ -24,8 +28,7 @@ summary(activity)
 ```
 
 ## What is mean total number of steps taken per day?
-```{r, message=FALSE}
-library(dplyr)
+```{r}
 totalByDay = activity %>%
               group_by(Date) %>%
               summarise(sum=sum(steps))
@@ -43,10 +46,66 @@ median(totalByDay$sum, na.rm=TRUE)
 
 ## What is the average daily activity pattern?
 
+```{r}
+averageByInterval <- activity %>%
+                      group_by(interval) %>%
+                      summarise(avg=mean(steps, na.rm = TRUE))
+plot(averageByInterval, type="l", ylab ="Average number of steps")
+```
 
+Which interval has the maximum average number of steps?
+```{r}
+averageByInterval <- activity %>%
+                      group_by(interval) %>%
+                      summarise(avg=mean(steps, na.rm = TRUE))
+
+averageByInterval[averageByInterval$avg==max(averageByInterval$avg),]
+```
 
 ## Imputing missing values
+How many missing values are we dealing with?  Is it a large proportion?
+```{r}
+sum(is.na(activity$steps))
+sum(is.na(activity$steps)) / nrow(activity)
+```
+I will replace the missing values with the average number of steps taken during that interval for which we have values
 
+```{r}
+# Get just the rows with missing steps
+missing <- activity[is.na(activity$steps),]
 
+# Add a column for imputed values. This combination of mutate()
+# and sapply() is a little messy -- there is probably a nicer way
+missing <- mutate(missing, 
+                  steps=sapply(interval, 
+                               function(y) averageByInterval[averageByInterval$interval == y,]$avg))
 
+# Create a new data frame with 1) original rows with non-null steps 2) newly created data points
+
+newActivity = rbind(activity[!is.na(activity$steps),],
+                    missing)
+```
+Lets check that we have the same number of rows we started with and that there are no null values in steps any more
+```{r}
+nrow(activity) == nrow(newActivity)
+sum(is.na(newActivity$steps))
+```
+
+Now I recreate our original histogram and recacluate the mean and median with our new data set.
+```{r}
+newTotalByDay = newActivity %>%
+                group_by(Date) %>%
+                summarise(sum=sum(steps))
+
+hist(newTotalByDay$sum, breaks=10, 
+     main = "Histogram of total daily steps",
+     xlab = NULL)
+mean(newTotalByDay$sum)
+median(newTotalByDay$sum)
+```
+Imputing missing values does not seem to have changed my estimate of the mean or median much at all.
+```{r}
+format(mean(newTotalByDay$sum) / mean(totalByDay$sum, na.rm = TRUE), nsmall=5)
+format(median(newTotalByDay$sum) / median(totalByDay$sum, na.rm = TRUE),nsmall=5)
+```
 ## Are there differences in activity patterns between weekdays and weekends?
