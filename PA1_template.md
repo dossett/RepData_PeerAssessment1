@@ -3,6 +3,7 @@ First, I load necessary libraries with messages supressed.  Doing this once so f
 
 ```r
 library(dplyr)
+library(ggplot2)
 ```
 
 ## Loading and preprocessing the data
@@ -179,7 +180,7 @@ median(newTotalByDay$sum)
 ```
 ## [1] 10766
 ```
-Imputing missing values does not seem to have changed my estimate of the mean or median much at all.
+Imputing missing values has **virtually no impact** on my estimates of total number of steps taken each day.
 
 ```r
 format(mean(newTotalByDay$sum) / mean(totalByDay$sum, na.rm = TRUE), nsmall=5)
@@ -197,3 +198,27 @@ format(median(newTotalByDay$sum) / median(totalByDay$sum, na.rm = TRUE),nsmall=5
 ## [1] "1.00011"
 ```
 ## Are there differences in activity patterns between weekdays and weekends?
+First I add a new factor variable indicating weekday or weekend
+
+```r
+newActivity <- newActivity %>%
+               mutate(dayType = "weekday")
+newActivity[weekdays(newActivity$Date) %in% c("Saturday", "Sunday"),"dayType"] <- "weekend"
+newActivity$dayType <- as.factor(newActivity$dayType)
+
+newAverageByInterval <- newActivity %>%
+                        group_by(interval, dayType) %>%
+                        summarise(avg=mean(steps))
+```
+Is the average by interval different for weekdays and weekend?  In general yes:  
+  
+- Weekday has a higher peak in the morning  
+- Weekends are a little more dispersed during the day
+
+```r
+ggplot(newAverageByInterval) + 
+  geom_point(aes(x=interval,y=avg)) + 
+  facet_wrap(~dayType)
+```
+
+![plot of chunk unnamed-chunk-13](./PA1_template_files/figure-html/unnamed-chunk-13.png) 
